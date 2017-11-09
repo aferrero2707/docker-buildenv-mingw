@@ -1,0 +1,44 @@
+*** libiptcdata-1.0.4/iptc/main.c	2009-03-25 03:02:29.000000000 +0000
+--- libiptcdata-1.0.4.new/iptc/main.c	2017-11-07 15:18:12.410592777 +0000
+***************
+*** 13,18 ****
+--- 13,22 ----
+  
+  #include <locale.h>
+  
++ #if defined(_WIN32)
++ #undef HAVE_ICONV_H
++ #endif
++ 
+  #if defined(HAVE_ICONV_H) && defined(HAVE_WCHAR_H)
+  #include <iconv.h>
+  #include <wchar.h>
+***************
+*** 832,843 ****
+--- 836,849 ----
+  				if (do_backup) {
+  					sprintf (bakfile, "%s~", filename);
+  					unlink (bakfile);
++ #if !defined(_WIN32)
+  					if (link (filename, bakfile) < 0) {
+  						fprintf (stderr, "%s: %s\n", filename, _("Failed to create backup file, aborting"));
+  						unlink (tmpfile);
+  						iptc_data_unref (d);
+  						continue;
+  					}
++ #endif
+  				}
+  				stat (filename, &statinfo);
+  				if (rename (tmpfile, filename) < 0) {
+***************
+*** 847,853 ****
+--- 853,861 ----
+  					continue;
+  				}
+  				else {
++ #if !defined(_WIN32)
+  					chown (filename, -1, statinfo.st_gid);
++ #endif
+  					chmod (filename, statinfo.st_mode);
+  				}
+  				if (!is_quiet)

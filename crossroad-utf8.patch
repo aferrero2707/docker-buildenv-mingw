@@ -1,0 +1,13 @@
+*** crossroad-0.7/setup.py	Tue Jun 13 15:56:38 2017
+--- crossroad-0.7-new/setup.py	Fri Oct 27 12:33:29 2017
+***************
+*** 29,34 ****
+--- 29,36 ----
+  import shutil
+  import configparser
+  
++ sys.setdefaultencoding('utf8')
++ 
+  version = '0.7'
+  deactivated_platforms = ['android-arm']
+  srcdir = os.path.dirname(os.path.realpath(sys.argv[0]))

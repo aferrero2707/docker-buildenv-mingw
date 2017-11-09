@@ -1,0 +1,146 @@
+diff -rcN openexr-2.2.0.orig/IlmImf/CMakeLists.txt openexr-2.2.0/IlmImf/CMakeLists.txt
+*** openexr-2.2.0.orig/IlmImf/CMakeLists.txt	Sun Aug 10 06:23:56 2014
+--- openexr-2.2.0/IlmImf/CMakeLists.txt	Sun Nov  5 15:37:22 2017
+***************
+*** 15,21 ****
+  
+  ADD_CUSTOM_COMMAND (
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/b44ExpLogTable.h
+!   COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/b44ExpLogTable > ${CMAKE_CURRENT_BINARY_DIR}/b44ExpLogTable.h
+    DEPENDS b44ExpLogTable
+  )
+  
+--- 15,21 ----
+  
+  ADD_CUSTOM_COMMAND (
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/b44ExpLogTable.h
+!   COMMAND cp -a ${ILMBASE_PACKAGE_PREFIX}/lib/*.dll ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR} && wine ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/b44ExpLogTable.exe > ${CMAKE_CURRENT_BINARY_DIR}/b44ExpLogTable.h
+    DEPENDS b44ExpLogTable
+  )
+  
+***************
+*** 32,38 ****
+  
+  ADD_CUSTOM_COMMAND (
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/dwaLookups.h
+!   COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/dwaLookups > ${CMAKE_CURRENT_BINARY_DIR}/dwaLookups.h
+    DEPENDS dwaLookups
+  )
+  
+--- 32,38 ----
+  
+  ADD_CUSTOM_COMMAND (
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/dwaLookups.h
+!   COMMAND cp -a ${ILMBASE_PACKAGE_PREFIX}/lib/*.dll ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR} && wine ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/dwaLookups.exe > ${CMAKE_CURRENT_BINARY_DIR}/dwaLookups.h
+    DEPENDS dwaLookups
+  )
+  
+diff -rcN openexr-2.2.0.orig/IlmImf/ImfOptimizedPixelReading.h openexr-2.2.0/IlmImf/ImfOptimizedPixelReading.h
+*** openexr-2.2.0.orig/IlmImf/ImfOptimizedPixelReading.h	Sun Aug 10 06:23:56 2014
+--- openexr-2.2.0/IlmImf/ImfOptimizedPixelReading.h	Sun Nov  5 17:53:11 2017
+***************
+*** 70,76 ****
+  bool
+  isPointerSSEAligned (const void* EXR_RESTRICT pPointer)
+  {
+!     unsigned long trailingBits = ((unsigned long)pPointer) & 15;
+      return trailingBits == 0;
+  }
+  
+--- 70,76 ----
+  bool
+  isPointerSSEAligned (const void* EXR_RESTRICT pPointer)
+  {
+!     intptr_t trailingBits = ((intptr_t)pPointer) & 15;
+      return trailingBits == 0;
+  }
+  
+diff -rcN openexr-2.2.0.orig/IlmImf/ImfSystemSpecific.h openexr-2.2.0/IlmImf/ImfSystemSpecific.h
+*** openexr-2.2.0.orig/IlmImf/ImfSystemSpecific.h	Sun Aug 10 06:23:57 2014
+--- openexr-2.2.0/IlmImf/ImfSystemSpecific.h	Sun Nov  5 17:24:42 2017
+***************
+*** 40,45 ****
+--- 40,55 ----
+  #include <stdlib.h>
+  #include "ImfExport.h"
+  
++ #ifdef _WIN32
++ //#ifndef _MSC_VER
++ //#define _MSC_VER
++ //#endif
++ #define posix_memalign(p, a, s) (((*(p)) = _aligned_malloc((s), (a))), *(p) ?0 :errno)
++ #define posix_memalign_free _aligned_free
++ #else
++ #define posix_memalign_free free
++ #endif
++ 
+  OPENEXR_IMF_INTERNAL_NAMESPACE_HEADER_ENTER
+  
+  
+***************
+*** 70,76 ****
+  
+  static void EXRFreeAligned(void* ptr)
+  {
+!     free(ptr);
+  }
+  
+  #elif defined _MSC_VER
+--- 80,86 ----
+  
+  static void EXRFreeAligned(void* ptr)
+  {
+!   posix_memalign_free(ptr);
+  }
+  
+  #elif defined _MSC_VER
+diff -rcN openexr-2.2.0.orig/IlmImf/Makefile.in openexr-2.2.0/IlmImf/Makefile.in
+*** openexr-2.2.0.orig/IlmImf/Makefile.in	Sun Aug 10 06:48:23 2014
+--- openexr-2.2.0/IlmImf/Makefile.in	Sun Nov  5 15:00:51 2017
+***************
+*** 121,126 ****
+--- 121,129 ----
+  dwaLookups_OBJECTS = $(am_dwaLookups_OBJECTS)
+  dwaLookups_DEPENDENCIES =
+  DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/config
++ INCLUDES = @ILMBASE_CXXFLAGS@ \
++ 	   -I$(top_builddir)  \
++ 	   -I$(top_srcdir)/config
+  depcomp = $(SHELL) $(top_srcdir)/depcomp
+  am__depfiles_maybe = depfiles
+  am__mv = mv -f
+***************
+*** 131,137 ****
+  	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+  CXXLD = $(CXX)
+  CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+! 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
+  	$(LDFLAGS) -o $@
+  COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+  	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+--- 134,140 ----
+  	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+  CXXLD = $(CXX)
+  CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+! 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(INCLUDES) $(AM_LDFLAGS) \
+  	$(LDFLAGS) -o $@
+  COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+  	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+***************
+*** 546,552 ****
+  	echo " rm -f" $$list; \
+  	rm -f $$list
+  b44ExpLogTable$(EXEEXT): $(b44ExpLogTable_OBJECTS) $(b44ExpLogTable_DEPENDENCIES) 
+! 	@rm -f b44ExpLogTable$(EXEEXT)
+  	$(CXXLINK) $(b44ExpLogTable_OBJECTS) $(b44ExpLogTable_LDADD) $(LIBS)
+  dwaLookups$(EXEEXT): $(dwaLookups_OBJECTS) $(dwaLookups_DEPENDENCIES) 
+  	@rm -f dwaLookups$(EXEEXT)
+--- 549,556 ----
+  	echo " rm -f" $$list; \
+  	rm -f $$list
+  b44ExpLogTable$(EXEEXT): $(b44ExpLogTable_OBJECTS) $(b44ExpLogTable_DEPENDENCIES) 
+! 	rm -f b44ExpLogTable$(EXEEXT)
+! 	echo "Compiling b44ExpLogTable$(EXEEXT)"
+  	$(CXXLINK) $(b44ExpLogTable_OBJECTS) $(b44ExpLogTable_LDADD) $(LIBS)
+  dwaLookups$(EXEEXT): $(dwaLookups_OBJECTS) $(dwaLookups_DEPENDENCIES) 
+  	@rm -f dwaLookups$(EXEEXT)

@@ -1,0 +1,290 @@
+diff -rcN ilmbase-2.2.0.orig/Half/CMakeLists.txt ilmbase-2.2.0/Half/CMakeLists.txt
+*** ilmbase-2.2.0.orig/Half/CMakeLists.txt	Sun Aug 10 06:23:56 2014
+--- ilmbase-2.2.0/Half/CMakeLists.txt	Sun Nov  5 15:26:33 2017
+***************
+*** 4,10 ****
+  
+  ADD_CUSTOM_COMMAND (
+    TARGET eLut POST_BUILD
+!   COMMAND eLut > ${CMAKE_CURRENT_BINARY_DIR}/eLut.h
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  )
+  SET_SOURCE_FILES_PROPERTIES(
+--- 4,10 ----
+  
+  ADD_CUSTOM_COMMAND (
+    TARGET eLut POST_BUILD
+!   COMMAND wine eLut.exe > ${CMAKE_CURRENT_BINARY_DIR}/eLut.h
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  )
+  SET_SOURCE_FILES_PROPERTIES(
+***************
+*** 15,21 ****
+  ADD_EXECUTABLE ( toFloat toFloat.cpp )
+  ADD_CUSTOM_COMMAND (
+    TARGET toFloat POST_BUILD
+!   COMMAND toFloat > ${CMAKE_CURRENT_BINARY_DIR}/toFloat.h
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  )
+  SET_SOURCE_FILES_PROPERTIES(
+--- 15,21 ----
+  ADD_EXECUTABLE ( toFloat toFloat.cpp )
+  ADD_CUSTOM_COMMAND (
+    TARGET toFloat POST_BUILD
+!   COMMAND wine toFloat.exe > ${CMAKE_CURRENT_BINARY_DIR}/toFloat.h
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  )
+  SET_SOURCE_FILES_PROPERTIES(
+diff -rcN ilmbase-2.2.0.orig/Half/Makefile.in ilmbase-2.2.0/Half/Makefile.in
+*** ilmbase-2.2.0.orig/Half/Makefile.in	Sun Aug 10 06:37:23 2014
+--- ilmbase-2.2.0/Half/Makefile.in	Sun Nov  5 14:13:00 2017
+***************
+*** 609,618 ****
+  
+  
+  eLut.h:	eLut
+! 	./eLut > eLut.h
+  
+  toFloat.h: toFloat
+! 	   ./toFloat > toFloat.h
+  
+  # Tell versions [3.59,3.63) of GNU make to not export all variables.
+  # Otherwise a system limit (for SysV at least) may be exceeded.
+--- 609,620 ----
+  
+  
+  eLut.h:	eLut
+! 	wine ./eLut > eLut.h
+! 	cat eLut.h
+  
+  toFloat.h: toFloat
+! 	wine ./toFloat > toFloat.h
+! 	cat toFloat.h
+  
+  # Tell versions [3.59,3.63) of GNU make to not export all variables.
+  # Otherwise a system limit (for SysV at least) may be exceeded.
+diff -rcN ilmbase-2.2.0.orig/IlmThread/IlmThread.h ilmbase-2.2.0/IlmThread/IlmThread.h
+*** ilmbase-2.2.0.orig/IlmThread/IlmThread.h	Sun Aug 10 04:03:38 2014
+--- ilmbase-2.2.0/IlmThread/IlmThread.h	Sun Nov  5 14:21:15 2017
+***************
+*** 94,108 ****
+  #include "IlmThreadExport.h"
+  #include "IlmThreadNamespace.h"
+  
+! #if defined _WIN32 || defined _WIN64
+      #ifdef NOMINMAX
+          #undef NOMINMAX
+      #endif
+      #define NOMINMAX
+      #include <windows.h>
+      #include <process.h>
+- #elif HAVE_PTHREAD
+-     #include <pthread.h>
+  #endif
+  
+  ILMTHREAD_INTERNAL_NAMESPACE_HEADER_ENTER
+--- 94,108 ----
+  #include "IlmThreadExport.h"
+  #include "IlmThreadNamespace.h"
+  
+! #if HAVE_PTHREAD
+!     #include <pthread.h>
+! #elif defined _WIN32 || defined _WIN64
+      #ifdef NOMINMAX
+          #undef NOMINMAX
+      #endif
+      #define NOMINMAX
+      #include <windows.h>
+      #include <process.h>
+  #endif
+  
+  ILMTHREAD_INTERNAL_NAMESPACE_HEADER_ENTER
+***************
+*** 127,137 ****
+      
+    private:
+  
+!     #if defined _WIN32 || defined _WIN64
+! 	HANDLE _thread;
+!     #elif HAVE_PTHREAD
+! 	pthread_t _thread;
+!     #endif
+  
+      void operator = (const Thread& t);	// not implemented
+      Thread (const Thread& t);		// not implemented
+--- 127,137 ----
+      
+    private:
+  
+! #if HAVE_PTHREAD
+!     pthread_t _thread;
+! #elif defined _WIN32 || defined _WIN64
+!     HANDLE _thread;
+! #endif
+  
+      void operator = (const Thread& t);	// not implemented
+      Thread (const Thread& t);		// not implemented
+diff -rcN ilmbase-2.2.0.orig/IlmThread/IlmThreadMutex.h ilmbase-2.2.0/IlmThread/IlmThreadMutex.h
+*** ilmbase-2.2.0.orig/IlmThread/IlmThreadMutex.h	Sun Aug 10 04:03:38 2014
+--- ilmbase-2.2.0/IlmThread/IlmThreadMutex.h	Sun Nov  5 14:26:34 2017
+***************
+*** 70,83 ****
+  #include "IlmBaseConfig.h"
+  #include "IlmThreadNamespace.h"
+  
+! #if defined _WIN32 || defined _WIN64
+      #ifdef NOMINMAX
+          #undef NOMINMAX
+      #endif
+      #define NOMINMAX
+      #include <windows.h>
+- #elif HAVE_PTHREAD
+-     #include <pthread.h>
+  #endif
+  
+  ILMTHREAD_INTERNAL_NAMESPACE_HEADER_ENTER
+--- 70,83 ----
+  #include "IlmBaseConfig.h"
+  #include "IlmThreadNamespace.h"
+  
+! #if HAVE_PTHREAD
+!     #include <pthread.h>
+! #elif defined _WIN32 || defined _WIN64
+      #ifdef NOMINMAX
+          #undef NOMINMAX
+      #endif
+      #define NOMINMAX
+      #include <windows.h>
+  #endif
+  
+  ILMTHREAD_INTERNAL_NAMESPACE_HEADER_ENTER
+***************
+*** 97,107 ****
+      void	lock () const;
+      void	unlock () const;
+  
+!     #if defined _WIN32 || defined _WIN64
+! 	mutable CRITICAL_SECTION _mutex;
+!     #elif HAVE_PTHREAD
+! 	mutable pthread_mutex_t _mutex;
+!     #endif
+  
+      void operator = (const Mutex& M);	// not implemented
+      Mutex (const Mutex& M);		// not implemented
+--- 97,107 ----
+      void	lock () const;
+      void	unlock () const;
+  
+! #if HAVE_PTHREAD
+!     mutable pthread_mutex_t _mutex;
+! #elif defined _WIN32 || defined _WIN64
+!     mutable CRITICAL_SECTION _mutex;
+! #endif
+  
+      void operator = (const Mutex& M);	// not implemented
+      Mutex (const Mutex& M);		// not implemented
+diff -rcN ilmbase-2.2.0.orig/IlmThread/IlmThreadSemaphore.h ilmbase-2.2.0/IlmThread/IlmThreadSemaphore.h
+*** ilmbase-2.2.0.orig/IlmThread/IlmThreadSemaphore.h	Sun Aug 10 04:03:38 2014
+--- ilmbase-2.2.0/IlmThread/IlmThreadSemaphore.h	Sun Nov  5 14:25:02 2017
+***************
+*** 46,61 ****
+  #include "IlmThreadExport.h"
+  #include "IlmThreadNamespace.h"
+  
+! #if defined _WIN32 || defined _WIN64
+      #ifdef NOMINMAX
+          #undef NOMINMAX
+      #endif
+      #define NOMINMAX
+      #include <windows.h>
+- #elif HAVE_PTHREAD && !HAVE_POSIX_SEMAPHORES
+-     #include <pthread.h>
+- #elif HAVE_PTHREAD && HAVE_POSIX_SEMAPHORES
+-     #include <semaphore.h>
+  #endif
+  
+  ILMTHREAD_INTERNAL_NAMESPACE_HEADER_ENTER
+--- 46,61 ----
+  #include "IlmThreadExport.h"
+  #include "IlmThreadNamespace.h"
+  
+! #if HAVE_PTHREAD && !HAVE_POSIX_SEMAPHORES
+!     #include <pthread.h>
+! #elif HAVE_PTHREAD && HAVE_POSIX_SEMAPHORES
+!     #include <semaphore.h>
+! #elif defined _WIN32 || defined _WIN64
+      #ifdef NOMINMAX
+          #undef NOMINMAX
+      #endif
+      #define NOMINMAX
+      #include <windows.h>
+  #endif
+  
+  ILMTHREAD_INTERNAL_NAMESPACE_HEADER_ENTER
+***************
+*** 75,106 ****
+  
+    private:
+  
+!     #if defined _WIN32 || defined _WIN64
+! 
+! 	mutable HANDLE _semaphore;
+  
+!     #elif HAVE_PTHREAD && !HAVE_POSIX_SEMAPHORES
+  
+! 	//
+! 	// If the platform has Posix threads but no semapohores,
+! 	// then we implement them ourselves using condition variables
+! 	//
+  
+! 	struct sema_t
+! 	{
+! 	    unsigned int count;
+! 	    unsigned long numWaiting;
+! 	    pthread_mutex_t mutex;
+! 	    pthread_cond_t nonZero;
+! 	};
+  
+! 	mutable sema_t _semaphore;
+  
+!     #elif HAVE_PTHREAD && HAVE_POSIX_SEMAPHORES
+  
+! 	mutable sem_t _semaphore;
+  
+!     #endif
+  
+      void operator = (const Semaphore& s);	// not implemented
+      Semaphore (const Semaphore& s);		// not implemented
+--- 75,106 ----
+  
+    private:
+  
+! #if HAVE_PTHREAD && !HAVE_POSIX_SEMAPHORES
+  
+!     //
+!     // If the platform has Posix threads but no semapohores,
+!     // then we implement them ourselves using condition variables
+!     //
+! 
+!     struct sema_t
+!     {
+!       unsigned int count;
+!       unsigned long numWaiting;
+!       pthread_mutex_t mutex;
+!       pthread_cond_t nonZero;
+!     };
+  
+!     mutable sema_t _semaphore;
+  
+! #elif HAVE_PTHREAD && HAVE_POSIX_SEMAPHORES
+  
+!     mutable sem_t _semaphore;
+  
+! #elif defined _WIN32 || defined _WIN64
+  
+!     mutable HANDLE _semaphore;
+  
+! #endif
+  
+      void operator = (const Semaphore& s);	// not implemented
+      Semaphore (const Semaphore& s);		// not implemented
