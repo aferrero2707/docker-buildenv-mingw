@@ -40,10 +40,10 @@ cd .. && rm -rf /work/ilmbase-2* && rm -rf /work/openexr-2*) || exit 1
 #exit 0
 
 # PugiXML
-git clone https://github.com/zeux/pugixml.git && cd pugixml 
-if [ $? -ne 0 ]; then exit 1; fi
-crossroad cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON && make && make install
-if [ $? -ne 0 ]; then exit 1; fi
+(cd /work && rm -rf pugixml* && git clone https://github.com/zeux/pugixml.git && cd pugixml && \
+mkdir -p build && cd build && \
+crossroad cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DBUILD_PKGCONFIG=ON .. && \
+make && make install) || exit 1
 
 (cd /work && rm -rf vips-* && \
 wget https://github.com/jcupitt/libvips/releases/download/v8.5.6/vips-8.5.6.tar.gz && \
