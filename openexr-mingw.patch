@@ -1,4 +1,4 @@
-diff -rcN openexr-2.2.0.orig/IlmImf/CMakeLists.txt openexr-2.2.0/IlmImf/CMakeLists.txt
+wdiff -rcN openexr-2.2.0.orig/IlmImf/CMakeLists.txt openexr-2.2.0/IlmImf/CMakeLists.txt
 *** openexr-2.2.0.orig/IlmImf/CMakeLists.txt	Sun Aug 10 06:23:56 2014
 --- openexr-2.2.0/IlmImf/CMakeLists.txt	Sun Nov  5 15:37:22 2017
 ***************
@@ -94,53 +94,3 @@ diff -rcN openexr-2.2.0.orig/IlmImf/ImfSystemSpecific.h openexr-2.2.0/IlmImf/Imf
   }
   
   #elif defined _MSC_VER
-diff -rcN openexr-2.2.0.orig/IlmImf/Makefile.in openexr-2.2.0/IlmImf/Makefile.in
-*** openexr-2.2.0.orig/IlmImf/Makefile.in	Sun Aug 10 06:48:23 2014
---- openexr-2.2.0/IlmImf/Makefile.in	Sun Nov  5 15:00:51 2017
-***************
-*** 121,126 ****
---- 121,129 ----
-  dwaLookups_OBJECTS = $(am_dwaLookups_OBJECTS)
-  dwaLookups_DEPENDENCIES =
-  DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/config
-+ INCLUDES = @ILMBASE_CXXFLAGS@ \
-+ 	   -I$(top_builddir)  \
-+ 	   -I$(top_srcdir)/config
-  depcomp = $(SHELL) $(top_srcdir)/depcomp
-  am__depfiles_maybe = depfiles
-  am__mv = mv -f
-***************
-*** 131,137 ****
-  	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-  CXXLD = $(CXX)
-  CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-! 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
-  	$(LDFLAGS) -o $@
-  COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
-  	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
---- 134,140 ----
-  	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-  CXXLD = $(CXX)
-  CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-! 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(INCLUDES) $(AM_LDFLAGS) \
-  	$(LDFLAGS) -o $@
-  COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
-  	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-***************
-*** 546,552 ****
-  	echo " rm -f" $$list; \
-  	rm -f $$list
-  b44ExpLogTable$(EXEEXT): $(b44ExpLogTable_OBJECTS) $(b44ExpLogTable_DEPENDENCIES) 
-! 	@rm -f b44ExpLogTable$(EXEEXT)
-  	$(CXXLINK) $(b44ExpLogTable_OBJECTS) $(b44ExpLogTable_LDADD) $(LIBS)
-  dwaLookups$(EXEEXT): $(dwaLookups_OBJECTS) $(dwaLookups_DEPENDENCIES) 
-  	@rm -f dwaLookups$(EXEEXT)
---- 549,556 ----
-  	echo " rm -f" $$list; \
-  	rm -f $$list
-  b44ExpLogTable$(EXEEXT): $(b44ExpLogTable_OBJECTS) $(b44ExpLogTable_DEPENDENCIES) 
-! 	rm -f b44ExpLogTable$(EXEEXT)
-! 	echo "Compiling b44ExpLogTable$(EXEEXT)"
-  	$(CXXLINK) $(b44ExpLogTable_OBJECTS) $(b44ExpLogTable_LDADD) $(LIBS)
-  dwaLookups$(EXEEXT): $(dwaLookups_OBJECTS) $(dwaLookups_DEPENDENCIES) 
-  	@rm -f dwaLookups$(EXEEXT)

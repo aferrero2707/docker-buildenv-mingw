@@ -1,0 +1,28 @@
+*** Imath/ImathLimits.h	2017-11-17 23:00:23.000000000 +0000
+--- Imath/ImathLimits.h.new	2018-09-01 15:42:14.368956047 +0000
+***************
+*** 47,52 ****
+--- 47,69 ----
+  #include <float.h>
+  #include <limits.h>
+  
++ #if defined(__MINGW__) || defined(__MINGW32__) || defined(__MINGW64__)
++ // Work arround to fix build issues that may occur with Mingw:
++ // error: 'DBL_EPSILON' was not declared in this scope
++ // error: 'FLT_EPSILON' was not declared in this scope
++ 
++ #  ifndef LDBL_EPSILON
++ #    define LDBL_EPSILON __LDBL_EPSILON__
++ #  endif
++ #  ifndef DBL_EPSILON
++ #    define DBL_EPSILON __DBL_EPSILON__
++ #  endif
++ #  ifndef FLT_EPSILON
++ #    define FLT_EPSILON __FLT_EPSILON__
++ #  endif
++ #endif
++ 
++ 
+  //------------------------------------------
+  // In Windows, min and max are macros.  Yay.
+  //------------------------------------------

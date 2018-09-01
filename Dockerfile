@@ -1,4 +1,4 @@
-FROM ubuntu:17.10
+FROM ubuntu:18.04
 
 RUN apt-get update && apt-get install -y mingw-w64 git cmake mingw-w64-tools python3 python3-docutils python3-pip rpm2cpio nano libfile-mimeinfo-perl wget cpio locales wine-stable curl zip wget libglib2.0-dev libxml2-utils librsvg2-dev && \
 ln -s /usr/bin/python3 /usr/bin/python && \
@@ -40,6 +40,9 @@ ADD dep-build2.sh /work/dep-build2.sh
 RUN crossroad w64 w64-build --run=/work/dep-build2.sh
 ADD dep-build3.sh /work/dep-build3.sh
 RUN crossroad w64 w64-build --run=/work/dep-build3.sh
+
+#RUN apt-get remove -y librsvg2-dev libglib2.0-dev && apt-get -y autoremove && apt-get clean
+ADD ilmbase-limits.patch /work/
 ADD dep-build.sh /work/
 RUN crossroad w64 w64-build --run=/work/dep-build.sh
 

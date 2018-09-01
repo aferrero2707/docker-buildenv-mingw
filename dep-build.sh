@@ -13,11 +13,12 @@ crossroad configure && make -j 2 && make install && \
 cd .. && rm -rf /work/libiptcdata-1*) || exit 1
 
 (rm -rf /work/ilmbase-2* && cd /work && \
-wget http://download.savannah.nongnu.org/releases/openexr/ilmbase-2.2.0.tar.gz && \
-tar xzvf ilmbase-2.2.0.tar.gz && cd ilmbase-2.2.0 && \
+wget http://download.savannah.nongnu.org/releases/openexr/ilmbase-2.2.1.tar.gz && \
+tar xzvf ilmbase-2.2.1.tar.gz && cd ilmbase-2.2.1 && \
 patch -p1 < /work/ilmbase-mingw.patch && \
+patch -p0 < /work/ilmbase-limits.patch && \
 mkdir -p build && cd build && \
-crossroad cmake .. && make VERBOSE=1 && make install) || exit 1
+crossroad cmake .. && make VERBOSE=1 && make install) || exit 0
 
 #(rm -rf /work/ilmbase* && cp -a /sources/ilmbase-2.2.0 /work && \
 #cd /work/ilmbase-2.2.0 && mkdir -p build && cd build && \
@@ -26,8 +27,8 @@ crossroad cmake .. && make VERBOSE=1 && make install) || exit 1
 #exit 0
 
 (rm -rf /work/openexr-2* && cd /work && \
-wget http://download.savannah.nongnu.org/releases/openexr/openexr-2.2.0.tar.gz && \
-tar xzvf openexr-2.2.0.tar.gz && cd openexr-2.2.0 && \
+wget http://download.savannah.nongnu.org/releases/openexr/openexr-2.2.1.tar.gz && \
+tar xzvf openexr-2.2.1.tar.gz && cd openexr-2.2.1 && \
 patch -p1 < /work/openexr-mingw.patch && \
 mkdir -p build && cd build && \
 crossroad cmake -DILMBASE_PACKAGE_PREFIX=$CROSSROAD_PREFIX .. && make VERBOSE=1 && make install && \
