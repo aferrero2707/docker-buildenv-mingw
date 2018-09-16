@@ -48,3 +48,7 @@ RUN crossroad w64 w64-build --run=/work/dep-build.sh
 
 #ADD dep-install2.sh /work/dep-install2.sh
 #RUN crossroad w64 w64-build --run=/work/dep-install2.sh 
+
+ADD wine-startup.tgz /root
+RUN dpkg --add-architecture i386 && apt-get update -y && apt-get install -y wine32
+#RUN cd $HOME && tar xvf /work/wine-startup.tgz && rm -f /work/wine-startup.tgz
