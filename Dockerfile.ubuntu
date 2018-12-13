@@ -1,0 +1,67 @@
+FROM ubuntu:18.04
+#FROM centos:7
+
+RUN apt-get update && apt-get install -y locales software-properties-common && add-apt-repository ppa:mati865/mingw-w64 && apt-get update
+#RUN yum update -y && yum install -y epel-release https://centos7.iuscommunity.org/ius-release.rpm && yum update -y && yum -y install glibc-common python36u-devel python36u-pip
+
+RUN locale-gen en_US.UTF-8
+ENV LANG en_US.UTF-8 
+ENV LANGUAGE en_US:en 
+ENV LC_ALL en_US.UTF-8
+ENV PATH=/work/inst/bin:/usr/local/bin:$PATH
+ENV SHELL=/bin/bash
+
+RUN apt-get install -y mingw-w64 git cmake mingw-w64-tools python3 python3-docutils python3-pip rpm2cpio nano libfile-mimeinfo-perl wget cpio locales curl wine-stable zip wget libglib2.0-dev libxml2-utils librsvg2-dev && \
+update-alternatives --set x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-gcc-posix && \
+update-alternatives --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix && \
+ln -s /usr/bin/python3 /usr/bin/python
+
+#RUN yum install -y mingw64-gcc-c++ git cmake mingw-w64-tools nano perl-File-MimeInfo wget cpio wine curl zip wget glib2-devel #libxml2-devel librsvg2-devel python-docutils which && \
+#ln -s /usr/bin/python3.6 /usr/bin/python3
+
+RUN ls -l /usr/bin/x86_64-w64-mingw32-gcc; ls -l /usr/bin/x86_64-w64-mingw32-g++
+
+#FROM ubuntu:18.04
+#RUN cat /non_existent_file.txt
+
+
+#RUN LC_CTYPE="en_US.UTF-8" pip3 install crossroad
+
+ADD crossroad-utf8.patch /work/crossroad-utf8.patch
+ADD crossroad-0.7 /work/crossroad-0.7
+
+RUN mkdir -p /work && cp -a /work/crossroad-0.7 /work/crossroad-0.7-build && ls /work/crossroad-0.7-build && \
+cd /work/crossroad-0.7-build && python3 ./setup.py install --prefix=/usr/local
+#RUN echo "" >> /work/inst/share/crossroad/scripts/cmake/toolchain-w64.cmake
+#RUN echo "SET(PKG_CONFIG_EXECUTABLE i686-w64-mingw32-pkg-config)" >> #/work/inst/share/crossroad/scripts/cmake/toolchain-w64.cmake
+
+
+#RUN cat /work/dep-install.sh
+#RUN echo "shell: $SHELL"
+#RUN crossroad w64 w64-build
+ADD dep-install.sh /work/dep-install.sh
+
+# stop here
+
+RUN crossroad w64 w64-build --run=/work/dep-install.sh 
+ADD ilmbase-mingw.patch libiptcdata-mingw.patch openexr-mingw.patch gtk+-3-disable-demos.patch /work/
+#RUN yum install -y patch
+ADD dep-build.sh dep-build1.sh /work/
+RUN crossroad w64 w64-build --run=/work/dep-build1.sh && cat /build1.txt
+ADD dep-build2.sh /work/dep-build2.sh
+RUN crossroad w64 w64-build --run=/work/dep-build2.sh && cat /build2.txt
+ADD dep-build3.sh /work/dep-build3.sh
+RUN crossroad w64 w64-build --run=/work/dep-build3.sh && cat /build3.txt
+
+#RUN apt-get remove -y librsvg2-dev libglib2.0-dev && apt-get -y autoremove && apt-get clean
+ADD ilmbase-limits.patch /work/
+ADD dep-build.sh /work/
+RUN crossroad w64 w64-build --run=/work/dep-build.sh
+
+#ADD dep-install2.sh /work/dep-install2.sh
+#RUN crossroad w64 w64-build --run=/work/dep-install2.sh 
+
+ADD wine-startup.tgz /root/
+#RUN cd $HOME && ls -lhA /work/ && mv /work/wine-startup.bin /work/wine-startup.tgz && \
+#tar xvf /work/wine-startup.tgz && rm -f /work/wine-startup.tgz
+RUN dpkg --add-architecture i386 && apt-get update -y && apt-get install -y wine32

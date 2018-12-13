@@ -1,0 +1,11 @@
+FROM photoflow/docker-buildenv-mingw-manjaro-base
+
+ADD Toolchain-mingw-w64-x86_64.cmake /etc/Toolchain-mingw-w64-x86_64.cmake
+ADD cmake-mingw-w64 /usr/local/bin/cmake-mingw-w64
+
+#RUN sudo pacman --noconfirm -S pacman-contrib
+RUN sudo mkdir -p /work && sudo chmod a+w /work
+
+#sudo pacman --config /etc/pacman-msys.conf -S mingw64/mingw-w64-x86_64-gtkmm3
+
+#RUN yaourt --noconfirm --m-arg --skipchecksums --m-arg --skippgpcheck -S mingw-w64-cmake
