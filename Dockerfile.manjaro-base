@@ -1,9 +1,14 @@
 #FROM jonathonf/manjaro
 FROM archlinux/base
 
+
+ADD Toolchain-mingw-w64-x86_64.cmake /etc/Toolchain-mingw-w64-x86_64.cmake
 ADD pacman-msys.conf /etc/pacman-msys.conf
-RUN pacman --noconfirm -Syu && \
-  pacman --noconfirm -S wget archlinux-keyring awk shadow sudo git sed gzip grep fakeroot file automake autoconf make cmake binutils \
+
+# prevent coreutils from being upgraded
+RUN cp -a /etc/pacman.conf /etc/pacman.conf.save && cat /etc/pacman.conf.save | sed -e 's|#IgnorePkg   =|IgnorePkg   = coreutils|g' > /etc/pacman.conf && \
+  pacman --noconfirm -Syu && \
+  pacman --noconfirm -S wget archlinux-keyring awk shadow sudo git sed gzip grep fakeroot file automake autoconf make cmake binutils git \
     texlive-core base-devel pacutils perl-libwww perl-term-ui perl-json perl-data-dump perl-lwp-protocol-https perl-term-readline-gnu && \
   wget http://repo.msys2.org/msys/x86_64/msys2-keyring-r9.397a52e-1-any.pkg.tar.xz && \
   pacman --noconfirm -U msys2-keyring-r9.397a52e-1-any.pkg.tar.xz && \
@@ -11,56 +16,28 @@ RUN pacman --noconfirm -Syu && \
   mkdir -p /msys2/var/lib/pacman && \
   pacman --noconfirm --config /etc/pacman-msys.conf -Syu
 
-#RUN pacman --noconfirm -Syu && \
-#pacman --noconfirm -S wget archlinux-keyring awk && \
-#wget http://repo.msys2.org/msys/x86_64/msys2-keyring-r9.397a52e-1-any.pkg.tar.xz && \
-#pacman --noconfirm -U msys2-keyring-r9.397a52e-1-any.pkg.tar.xz && \
-#pacman-key --init && \
-#pacman-key --populate msys2 && \
-#pacman-key --refresh-keys && \
-#mkdir -p /msys2/var/lib/pacman && \
-#pacman --noconfirm --config /etc/pacman-msys.conf -Syu
-
-#RUN pacman --noconfirm -S shadow sudo git awk sed gzip grep fakeroot file automake autoconf make cmake binutils texlive-core base-devel
-
-#pacman --config /etc/pacman-msys.conf -S mingw64/mingw-w64-x86_64-gtkmm3
+#RUN echo 'MAKEFLAGS="-j8"' >> /etc/makepkg.conf
 
 RUN useradd --create-home msys2
 
-RUN echo "msys2 ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/user && \
-    chmod 0440 /etc/sudoers.d/user
+RUN pacman --noconfirm -S sudo && \ 
+  echo "msys2 ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/user && chmod 0440 /etc/sudoers.d/user
 
 USER msys2
 
-#RUN sudo pacman --noconfirm -S pacutils perl-libwww perl-term-ui perl-json perl-data-dump perl-lwp-protocol-https perl-term-readline-gnu
 RUN cd $HOME && git clone https://aur.archlinux.org/trizen.git && cd trizen && makepkg -s && sudo pacman --noconfirm -U trizen-*.pkg.tar.xz && cd .. && rm -rf trizen
-
-ADD Toolchain-mingw-w64-x86_64.cmake /etc/Toolchain-mingw-w64-x86_64.cmake
-
-RUN sudo mkdir -p /work && sudo chmod a+w /work
-RUN cd / && sudo ln -s /msys2/mingw64 /mingw64
 
 RUN gpg --recv-keys 13FCEF89DD9E3C4F && \
   gpg --recv-keys C3126D3B4AE55E93 && \
   gpg --recv-keys 93BDB53CD4EBC740 && \
-  gpg --recv-keys A328C3A2C3C45C06
-
-RUN trizen -S --noconfirm mingw-w64-headers && \
-  trizen -S --noconfirm mingw-w64-gcc-base && \
-  trizen -S --noconfirm mingw-w64-crt && \
-  trizen -S --noconfirm --noinstall --movepkg-dir=/tmp mingw-w64-winpthreads && \
-  sudo pacman --noconfirm -Rdd mingw-w64-headers-bootstrap && \
-  sudo pacman --noconfirm -U /tmp/mingw-w64-winpthreads-*.pkg.tar.xz && \
+  gpg --recv-keys A328C3A2C3C45C06 && \
+  trizen -S --noconfirm mingw-w64-binutils-bin && \
+  trizen -S --noconfirm mingw-w64-crt-bin && \
+  trizen -S --noconfirm mingw-w64-headers-bin && \
+  trizen -S --noconfirm mingw-w64-winpthreads-bin && \
+  trizen -S --noconfirm mingw-w64-gcc-bin && \
   trizen -S --noconfirm mingw-w64-sdl2
 
-#RUN trizen -S --noinstall --noconfirm --movepkg-dir=/tmp mingw-w64-headers && sudo pacman --noconfirm -U /tmp/mingw-w64-headers-*.pkg.tar.xz && rm -f /tmp/mingw-w64-headers-*.pkg.tar.xz
-
-#RUN gpg --recv-keys 13FCEF89DD9E3C4F
-#RUN gpg --recv-keys C3126D3B4AE55E93
-#RUN gpg --recv-keys 93BDB53CD4EBC740
-#RUN yaourt --noconfirm --m-arg --skipchecksums --m-arg --skippgpcheck -S mingw-w64-headers
-#RUN yaourt --noconfirm --m-arg --skipchecksums --m-arg --skippgpcheck -S mingw-w64-gcc-base
-#RUN yaourt --noconfirm --m-arg --skipchecksums --m-arg --skippgpcheck -S mingw-w64-winpthreads
-##RUN yaourt --noconfirm -R mingw-w64-headers-bootstrap
-#RUN yaourt --noconfirm --m-arg --skipchecksums --m-arg --skippgpcheck -S mingw-w64-sdl2
-
+RUN sudo mkdir -p /work && sudo chmod a+w /work
+RUN cd / && sudo ln -s /msys2/mingw64 /mingw64
+RUN sudo rm -rf /tmp/trizen-msys2

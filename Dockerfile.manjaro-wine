@@ -1,4 +1,11 @@
-FROM photoflow/docker-buildenv-mingw-manjaro
+FROM photoflow/docker-buildenv-mingw-manjaro-base
 
-RUN sudo pacman --noconfirm -Syu && sudo pacman --noconfirm -S wine
+USER root
+
+RUN echo "[multilib]" >> /etc/pacman.conf && \
+  echo "Include = /etc/pacman.d/mirrorlist" >> /etc/pacman.conf && \
+  pacman --noconfirm -Syu && pacman --noconfirm -S wine
+
+USER msys2
+
 ADD ./wine-startup-manjaro.tgz /home/msys2
