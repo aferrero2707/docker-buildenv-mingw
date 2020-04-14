@@ -1,0 +1,4 @@
+FROM photoflow/docker-buildenv-mingw-manjaro
+
+RUN sudo pacman --noconfirm -Syu && sudo pacman --noconfirm -S wine
+ADD ./wine-startup-manjaro.tgz /home/msys2
